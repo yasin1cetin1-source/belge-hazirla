@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Belge Hazırlama ve İndeks Sistemi</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f7f5f0;--bg2:#fff;--bg3:#edeae3;
+  --tx:#1a1a18;--tx2:#5c5b57;--tx3:#8a8983;
+  --bd:#d4d1c9;--bd2:#c2bfb6;
+  --ac:#2b6cb0;--ac2:#1e4e8c;--ac-bg:#e8f0fa;
+  --ok:#2d7a3a;--ok-bg:#e6f4ea;
+  --wr:#b45309;--wr-bg:#fef3c7;
+  --er:#c53030;--er-bg:#fee2e2;
+  --radius:6px;
+  --shadow:0 1px 3px rgba(0,0,0,.08);
+  --font:'IBM Plex Sans',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--tx);line-height:1.6;min-height:100vh}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+
+/* ── Header ── */
+.header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius);margin-bottom:20px}
+.header h1{font-size:18px;font-weight:600;letter-spacing:-.3px}
+.header .stats{display:flex;gap:16px;font-size:13px;color:var(--tx2)}
+.header .stat-num{font-weight:600;color:var(--ac);font-family:var(--mono)}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:2px;background:var(--bg3);padding:3px;border-radius:var(--radius);margin-bottom:20px;width:fit-content}
+.tab{padding:8px 20px;border:none;background:none;font-family:var(--font);font-size:14px;font-weight:500;color:var(--tx2);cursor:pointer;border-radius:4px;transition:all .15s}
+.tab:hover{color:var(--tx)}
+.tab.active{background:var(--bg2);color:var(--tx);box-shadow:var(--shadow)}
+
+/* ── Panels ── */
+.panel{display:none}
+.panel.active{display:block}
+
+/* ── Upload Area ── */
+.upload-zone{border:2px dashed var(--bd);border-radius:var(--radius);padding:48px 32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2)}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--ac);background:var(--ac-bg)}
+.upload-zone h3{font-size:16px;font-weight:500;margin-bottom:6px}
+.upload-zone p{font-size:13px;color:var(--tx2)}
+.upload-zone input{display:none}
+.upload-icon{width:48px;height:48px;margin:0 auto 12px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--tx2)}
+
+/* ── Alerts ── */
+.alert{padding:10px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px}
+.alert-warn{background:var(--wr-bg);color:var(--wr)}
+.alert-ok{background:var(--ok-bg);color:var(--ok)}
+.alert-er{background:var(--er-bg);color:var(--er)}
+.alert-info{background:var(--ac-bg);color:var(--ac)}
+
+/* ── Editor Layout ── */
+.editor-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.editor-col{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius);overflow:hidden}
+.editor-toolbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--bd);background:var(--bg3)}
+.editor-toolbar h3{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tx2)}
+.editor-body{padding:16px;min-height:400px;max-height:70vh;overflow-y:auto}
+.editor-body[contenteditable]{outline:none}
+
+/* ── Document Styles ── */
+.editor-body .belge h1,.editor-body .belge h2,.editor-body .belge h3{margin:16px 0 8px;font-weight:600}
+.editor-body .belge h1{font-size:18px;border-bottom:2px solid var(--bd);padding-bottom:6px}
+.editor-body .belge h2{font-size:16px;border-bottom:1px solid var(--bd);padding-bottom:4px}
+.editor-body .belge h3{font-size:14px}
+.editor-body .belge p{margin:6px 0;font-size:14px}
+.editor-body .belge .madde{margin:10px 0;padding:8px 12px;background:var(--bg);border-left:3px solid var(--ac);border-radius:0 var(--radius) var(--radius) 0;font-size:14px}
+.editor-body .belge .madde strong{color:var(--ac2);font-weight:600}
+.editor-body .belge .ocr-metin{margin:10px 0;padding:8px 12px;background:var(--wr-bg);border-left:3px solid var(--wr);border-radius:0 var(--radius) var(--radius) 0;font-size:14px}
+.editor-body .belge .ocr-metin em{font-size:12px;color:var(--wr)}
+
+/* ── Tables ── */
+.belge-tablo{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.belge-tablo th{background:var(--bg3);font-weight:600;text-align:left;padding:6px 10px;border:1px solid var(--bd)}
+.belge-tablo td{padding:6px 10px;border:1px solid var(--bd)}
+.belge-tablo tr:nth-child(even) td{background:var(--bg)}
+
+/* ── Clean text view ── */
+.temiz-metin{font-family:var(--mono);font-size:13px;white-space:pre-wrap;line-height:1.7;color:var(--tx)}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--bd);border-radius:var(--radius);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;background:var(--bg2);color:var(--tx)}
+.btn:hover{border-color:var(--bd2);background:var(--bg3)}
+.btn-primary{background:var(--ac);color:#fff;border-color:var(--ac)}
+.btn-primary:hover{background:var(--ac2)}
+.btn-ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.btn-ok:hover{opacity:.9}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-group{display:flex;gap:8px;margin-top:12px}
+
+/* ── File Info Bar ── */
+.file-info{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 16px;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius);margin-bottom:12px}
+.file-info .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:10px;font-size:12px;font-weight:500;font-family:var(--mono)}
+.badge-format{background:var(--ac-bg);color:var(--ac)}
+.badge-pages{background:var(--bg3);color:var(--tx2)}
+.badge-tables{background:var(--wr-bg);color:var(--wr)}
+.badge-sections{background:var(--ok-bg);color:var(--ok)}
+.file-info .name{font-weight:600;font-size:14px}
+
+/* ── Search ── */
+.search-box{display:flex;gap:8px;margin-bottom:16px}
+.search-box input{flex:1;padding:10px 14px;border:1px solid var(--bd);border-radius:var(--radius);font-family:var(--font);font-size:14px;background:var(--bg2)}
+.search-box input:focus{outline:none;border-color:var(--ac)}
+
+/* ── Results ── */
+.result-card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.result-card h4{font-size:14px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.result-card .score{font-family:var(--mono);font-size:12px;color:var(--ok);background:var(--ok-bg);padding:2px 6px;border-radius:10px}
+.result-card .excerpt{font-size:13px;color:var(--tx2);margin:8px 0;padding:8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--ac)}
+.result-card .meta{font-size:12px;color:var(--tx3);font-family:var(--mono)}
+.gemini-answer{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius);padding:20px;margin-top:16px}
+.gemini-answer h3{font-size:15px;font-weight:600;margin-bottom:10px;color:var(--ac2)}
+.gemini-answer .content{font-size:14px;line-height:1.7;white-space:pre-wrap}
+.intent-box{background:var(--ac-bg);border-radius:var(--radius);padding:10px 14px;font-size:13px;color:var(--ac);margin-bottom:12px;font-style:italic}
+
+/* ── Doc List ── */
+.doc-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid var(--bd);border-radius:var(--radius);margin-bottom:6px;background:var(--bg2)}
+.doc-item .doc-name{font-weight:500;font-size:14px}
+.doc-item .doc-meta{font-size:12px;color:var(--tx2);font-family:var(--mono)}
+.doc-item .doc-status{width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:8px}
+
+/* ── Loading ── */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-bar{height:3px;background:var(--ac-bg);border-radius:2px;overflow:hidden;margin:8px 0}
+.loading-bar-inner{height:100%;width:30%;background:var(--ac);border-radius:2px;animation:slide 1.2s ease infinite}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .editor-layout{grid-template-columns:1fr}
+  .header{flex-direction:column;gap:10px;align-items:flex-start}
+  .header .stats{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Belge Hazırlama ve İndeks Sistemi</h1>
+    <div class="stats" id="stats">
+      <span>Belgeler: <span class="stat-num" id="stat-docs">-</span></span>
+      <span>Chunks: <span class="stat-num" id="stat-chunks">-</span></span>
+      <span>Vektörler: <span class="stat-num" id="stat-vectors">-</span></span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-tab="hazirla" onclick="switchTab('hazirla')">Belge hazırla</button>
+    <button class="tab" data-tab="sorgula" onclick="switchTab('sorgula')">Sorgula</button>
+    <button class="tab" data-tab="belgeler" onclick="switchTab('belgeler')">Belgelerim</button>
+  </div>
+
+  <!-- ═══ Tab 1: Belge Hazırla ═══ -->
+  <div class="panel active" id="panel-hazirla">
+    <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <div class="upload-icon">+</div>
+      <h3>Belge yükleyin</h3>
+      <p>PDF, DOCX, TXT veya görsel dosyaları sürükleyip bırakın</p>
+      <input type="file" id="fileInput" multiple accept=".pdf,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.bmp,.tiff,.tif,.webp">
+    </div>
+
+    <div id="uploadStatus"></div>
+
+    <!-- File Info -->
+    <div id="fileInfo" style="display:none"></div>
+
+    <!-- Uyarılar -->
+    <div id="warnings"></div>
+
+    <!-- Editor -->
+    <div id="editorSection" style="display:none">
+      <div class="editor-layout">
+        <!-- Sol: HTML Önizleme (düzenlenebilir) -->
+        <div class="editor-col">
+          <div class="editor-toolbar">
+            <h3>Belge önizleme (düzenlenebilir)</h3>
+            <button class="btn btn-sm" onclick="resetEditor()">Sıfırla</button>
+          </div>
+          <div class="editor-body" id="htmlEditor" contenteditable="true"></div>
+        </div>
+
+        <!-- Sağ: Temiz Metin -->
+        <div class="editor-col">
+          <div class="editor-toolbar">
+            <h3>Temiz metin (indeks metni)</h3>
+            <button class="btn btn-sm" onclick="updateCleanText()">Güncelle</button>
+          </div>
+          <div class="editor-body">
+            <div class="temiz-metin" id="cleanText"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-group" style="justify-content:flex-end">
+        <button class="btn" onclick="cancelEdit()">Vazgeç</button>
+        <button class="btn btn-ok" onclick="approveDocument()">
+          Onayla ve indeksle
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Tab 2: Sorgula ═══ -->
+  <div class="panel" id="panel-sorgula">
+    <div class="search-box">
+      <input type="text" id="queryInput" placeholder="Sorunuzu yazın... (ör: Kıdem tazminatında fazla mesai dikkate alınır mı?)" onkeydown="if(event.key==='Enter')doSearch()">
+      <button class="btn btn-primary" onclick="doSearch()">Sorgula</button>
+      <button class="btn" onclick="doQuickSearch()">Hızlı ara</button>
+    </div>
+    <div id="searchResults"></div>
+  </div>
+
+  <!-- ═══ Tab 3: Belgelerim ═══ -->
+  <div class="panel" id="panel-belgeler">
+    <div class="btn-group" style="margin-bottom:16px">
+      <button class="btn" onclick="loadDocList()">Yenile</button>
+      <button class="btn btn-primary" onclick="scanDocs()">Yeni belgeleri tara</button>
+    </div>
+    <div id="docList"></div>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+let currentFile = null;
+let originalHtml = '';
+
+// ── Tab switching ──
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
+  if (name === 'belgeler') loadDocList();
+}
+
+// ── Stats ──
+async function loadStats() {
+  try {
+    const r = await fetch(API + '/istatistik');
+    const d = await r.json();
+    document.getElementById('stat-docs').textContent = d.toplam_belge || 0;
+    document.getElementById('stat-chunks').textContent = d.toplam_chunk || 0;
+    document.getElementById('stat-vectors').textContent = d.toplam_vektor || 0;
+  } catch(e) { console.error(e); }
+}
+loadStats();
+
+// ── Drag & Drop ──
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.classList.remove('dragover');
+  if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+});
+document.getElementById('fileInput').addEventListener('change', e => {
+  if (e.target.files.length) handleFiles(e.target.files);
+});
+
+// ── File Upload & Prep ──
+async function handleFiles(files) {
+  for (const file of files) {
+    await prepareFile(file);
+  }
+}
+
+async function prepareFile(file) {
+  const status = document.getElementById('uploadStatus');
+  status.innerHTML = `<div class="alert alert-info"><span class="spinner"></span> "${file.name}" analiz ediliyor...</div><div class="loading-bar"><div class="loading-bar-inner"></div></div>`;
+
+  const fd = new FormData();
+  fd.append('dosya', file);
+
+  try {
+    const r = await fetch(API + '/hazirla/yukle', { method: 'POST', body: fd });
+    if (!r.ok) {
+      const err = await r.json();
+      status.innerHTML = `<div class="alert alert-er">${err.detail || 'Hata oluştu'}</div>`;
+      return;
+    }
+    const data = await r.json();
+    currentFile = data;
+    originalHtml = data.html_onizleme;
+
+    status.innerHTML = '';
+
+    // File info bar
+    const fi = document.getElementById('fileInfo');
+    fi.style.display = 'flex';
+    fi.innerHTML = `
+      <span class="name">${data.dosya_adi}</span>
+      <span class="badge badge-format">${data.format.toUpperCase()}</span>
+      ${data.sayfa_sayisi ? `<span class="badge badge-pages">${data.sayfa_sayisi} sayfa</span>` : ''}
+      <span class="badge badge-sections">${data.bolum_sayisi} bölüm</span>
+      ${data.tablo_sayisi ? `<span class="badge badge-tables">${data.tablo_sayisi} tablo</span>` : ''}
+    `;
+
+    // Warnings
+    const wn = document.getElementById('warnings');
+    wn.innerHTML = '';
+    if (data.uyarilar && data.uyarilar.length) {
+      wn.innerHTML = data.uyarilar.map(u => `<div class="alert alert-warn">${u}</div>`).join('');
+    }
+
+    // Show editor
+    const es = document.getElementById('editorSection');
+    es.style.display = 'block';
+    document.getElementById('htmlEditor').innerHTML = data.html_onizleme;
+    document.getElementById('cleanText').textContent = data.temiz_metin;
+
+  } catch(e) {
+    status.innerHTML = `<div class="alert alert-er">Bağlantı hatası: ${e.message}</div>`;
+  }
+}
+
+function resetEditor() {
+  if (originalHtml) {
+    document.getElementById('htmlEditor').innerHTML = originalHtml;
+    if (currentFile) {
+      document.getElementById('cleanText').textContent = currentFile.temiz_metin;
+    }
+  }
+}
+
+function updateCleanText() {
+  // HTML'den temiz metin üret (basit dönüşüm)
+  const editor = document.getElementById('htmlEditor');
+  const el = editor.cloneNode(true);
+
+  // Tabloları metin formatına çevir
+  el.querySelectorAll('table').forEach(tbl => {
+    let txt = '\n';
+    tbl.querySelectorAll('tr').forEach(tr => {
+      const cells = [];
+      tr.querySelectorAll('th, td').forEach(c => cells.push(c.textContent.trim()));
+      txt += cells.join(' | ') + '\n';
+    });
+    tbl.replaceWith(document.createTextNode(txt));
+  });
+
+  // Maddeleri formatla
+  el.querySelectorAll('.madde').forEach(m => {
+    const no = m.dataset.madde || '';
+    m.replaceWith(document.createTextNode(`\nMadde ${no}: ${m.textContent.trim()}\n`));
+  });
+
+  // Başlıkları formatla
+  el.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(h => {
+    const lvl = parseInt(h.tagName[1]);
+    h.replaceWith(document.createTextNode(`\n${'#'.repeat(lvl)} ${h.textContent.trim()}\n`));
+  });
+
+  document.getElementById('cleanText').textContent = el.textContent.replace(/\n{3,}/g, '\n\n').trim();
+}
+
+async function approveDocument() {
+  if (!currentFile) return;
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> İndeksleniyor...';
+
+  try {
+    const r = await fetch(API + '/hazirla/onayla', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dosya_adi: currentFile.dosya_adi,
+        duzenlenmis_html: document.getElementById('htmlEditor').innerHTML,
+        temiz_metin: document.getElementById('cleanText').textContent,
+      }),
+    });
+    const data = await r.json();
+    if (data.durum === 'basarili') {
+      document.getElementById('uploadStatus').innerHTML =
+        `<div class="alert alert-ok">"${currentFile.dosya_adi}" indekslendi. ${data.chunk_sayisi} parça oluşturuldu. (${data.sure_saniye}s)</div>`;
+      document.getElementById('editorSection').style.display = 'none';
+      document.getElementById('fileInfo').style.display = 'none';
+      document.getElementById('warnings').innerHTML = '';
+      currentFile = null;
+      loadStats();
+    } else {
+      document.getElementById('uploadStatus').innerHTML =
+        `<div class="alert alert-er">Hata: ${data.mesaj || 'Bilinmeyen hata'}</div>`;
+    }
+  } catch(e) {
+    document.getElementById('uploadStatus').innerHTML =
+      `<div class="alert alert-er">Bağlantı hatası: ${e.message}</div>`;
+  }
+  btn.disabled = false;
+  btn.textContent = 'Onayla ve indeksle';
+}
+
+function cancelEdit() {
+  document.getElementById('editorSection').style.display = 'none';
+  document.getElementById('fileInfo').style.display = 'none';
+  document.getElementById('warnings').innerHTML = '';
+  document.getElementById('uploadStatus').innerHTML = '';
+  currentFile = null;
+}
+
+// ── Search ──
+async function doSearch() {
+  const q = document.getElementById('queryInput').value.trim();
+  if (!q) return;
+  const sr = document.getElementById('searchResults');
+  sr.innerHTML = '<div class="alert alert-info"><span class="spinner"></span> Aranıyor ve Gemini yanıt üretiyor...</div><div class="loading-bar"><div class="loading-bar-inner"></div></div>';
+
+  try {
+    const r = await fetch(API + '/sorgula', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sorgu: q, top_k: 10, gemini: true }),
+    });
+    const data = await r.json();
+    renderResults(data);
+  } catch(e) {
+    sr.innerHTML = `<div class="alert alert-er">${e.message}</div>`;
+  }
+}
+
+async function doQuickSearch() {
+  const q = document.getElementById('queryInput').value.trim();
+  if (!q) return;
+  const sr = document.getElementById('searchResults');
+  sr.innerHTML = '<div class="alert alert-info"><span class="spinner"></span> Anlamsal arama yapılıyor...</div>';
+
+  try {
+    const r = await fetch(API + '/ara', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sorgu: q, top_k: 10 }),
+    });
+    const data = await r.json();
+    renderQuickResults(data);
+  } catch(e) {
+    sr.innerHTML = `<div class="alert alert-er">${e.message}</div>`;
+  }
+}
+
+function renderResults(data) {
+  const sr = document.getElementById('searchResults');
+  if (!data.sonuc_sayisi) {
+    sr.innerHTML = '<div class="alert alert-warn">İlgili belge bulunamadı.</div>';
+    return;
+  }
+
+  let html = '';
+
+  // Niyet analizi
+  if (data.niyet_analizi) {
+    html += `<div class="intent-box">${data.niyet_analizi}</div>`;
+  }
+
+  // Gemini yanıtı
+  if (data.gemini_yanit) {
+    html += `<div class="gemini-answer"><h3>Yanıt</h3><div class="content">${escapeHtml(data.gemini_yanit)}</div></div>`;
+  }
+
+  // İlgili belgeler
+  html += `<h3 style="margin:20px 0 10px;font-size:14px;font-weight:600;color:var(--tx2)">Kaynak belgeler (${data.sonuc_sayisi} eşleşme, ${Object.keys(data.ilgili_belgeler).length} belge)</h3>`;
+
+  for (const [belge, matches] of Object.entries(data.ilgili_belgeler)) {
+    html += `<div class="result-card"><h4>${escapeHtml(belge)}</h4>`;
+    for (const m of matches) {
+      html += `<div style="display:flex;gap:8px;align-items:flex-start;margin:6px 0">`;
+      html += `<span class="score">${(m.skor * 100).toFixed(0)}%</span>`;
+      if (m.madde_no) html += `<span class="meta">Madde ${m.madde_no}</span>`;
+      if (m.onizleme) html += `<div class="excerpt">${escapeHtml(m.onizleme)}</div>`;
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
+
+  if (data.sure_saniye) {
+    html += `<p style="font-size:12px;color:var(--tx3);text-align:right;margin-top:8px">${data.sure_saniye}s</p>`;
+  }
+
+  sr.innerHTML = html;
+}
+
+function renderQuickResults(data) {
+  const sr = document.getElementById('searchResults');
+  if (!data.sonuc_sayisi) {
+    sr.innerHTML = '<div class="alert alert-warn">İlgili belge bulunamadı.</div>';
+    return;
+  }
+
+  let html = `<p style="font-size:13px;color:var(--tx2);margin-bottom:12px">${data.sonuc_sayisi} eşleşme bulundu</p>`;
+
+  for (const [belge, matches] of Object.entries(data.belgeler)) {
+    html += `<div class="result-card"><h4>${escapeHtml(belge)}</h4>`;
+    for (const m of matches) {
+      html += `<div style="margin:8px 0"><div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">`;
+      html += `<span class="score">${(m.skor * 100).toFixed(0)}%</span>`;
+      if (m.madde_no) html += `<span class="meta">Madde ${m.madde_no}</span>`;
+      html += `</div><div class="excerpt">${escapeHtml(m.metin)}</div></div>`;
+    }
+    html += `</div>`;
+  }
+
+  sr.innerHTML = html;
+}
+
+// ── Doc List ──
+async function loadDocList() {
+  const dl = document.getElementById('docList');
+  try {
+    const r = await fetch(API + '/belgeler');
+    const data = await r.json();
+    if (!data.belgeler.length) {
+      dl.innerHTML = '<div class="alert alert-info">Henüz belge yüklenmemiş.</div>';
+      return;
+    }
+    dl.innerHTML = data.belgeler.map(d => `
+      <div class="doc-item">
+        <div style="display:flex;align-items:center">
+          <div class="doc-status" style="background:${d.indeksli ? 'var(--ok)' : 'var(--wr)'}"></div>
+          <div>
+            <div class="doc-name">${escapeHtml(d.ad)}</div>
+            <div class="doc-meta">${d.boyut_kb} KB${d.indeksli ? '' : ' (indekslenmemiş)'}</div>
+          </div>
+        </div>
+        <button class="btn btn-sm" onclick="deleteDoc('${escapeHtml(d.ad)}')" style="color:var(--er)">Sil</button>
+      </div>
+    `).join('');
+  } catch(e) {
+    dl.innerHTML = `<div class="alert alert-er">${e.message}</div>`;
+  }
+}
+
+async function deleteDoc(name) {
+  if (!confirm(`"${name}" silinecek. Emin misiniz?`)) return;
+  try {
+    await fetch(API + '/sil/' + encodeURIComponent(name), { method: 'DELETE' });
+    loadDocList();
+    loadStats();
+  } catch(e) { alert(e.message); }
+}
+
+async function scanDocs() {
+  try {
+    const r = await fetch(API + '/tara', { method: 'POST' });
+    const data = await r.json();
+    alert(`${data.yeni_indekslenen} yeni belge indekslendi.`);
+    loadDocList();
+    loadStats();
+  } catch(e) { alert(e.message); }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
